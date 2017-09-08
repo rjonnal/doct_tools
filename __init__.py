@@ -73,7 +73,7 @@ class Summary:
             plt.axvspan(x1,x2,color=colors[idx],alpha=0.25)
 
         plt.axvspan(normal_start,normal_end,color='y',alpha=0.25)
-        plt.savefig('%s_regions_marked.png',dpi=300)
+        plt.savefig('%s_regions_marked.png'%tag,dpi=300)
 
         print '%d\t%0.3f\t%0.3f\t%0.3f\t%0.3f'%(pupil_position,normal_mean,druse_left_mean,druse_center_mean,druse_right_mean)
         
