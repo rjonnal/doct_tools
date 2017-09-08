@@ -6,6 +6,78 @@ from scipy.misc import imread
 from scipy.interpolate import interp1d
 from scipy.signal import fftconvolve
 
+
+class Summary:
+
+    def __init__(self,fn):
+        partial = os.path.split(fn)[1] # split the filename into a list [directory,filename] and get the second
+        tokens = partial.split('_') # tokenize the filename using underscores
+        pupil_position = int(tokens[-2])
+        
+        tag = os.path.splitext(fn)[0]
+        isos_depth = np.loadtxt('%s_isos_depth.txt'%tag).astype(int)
+        normal_edges = np.loadtxt('%s_normal_edges.txt'%tag).astype(int)
+        druse_edges = np.loadtxt('%s_druse_edges.txt'%tag).astype(int)
+
+        druse_width = np.diff(sorted(druse_edges))
+        region_width = druse_width//5
+
+        normal_edges = sorted(normal_edges.astype(int))
+        normal_start,normal_end = normal_edges
+        
+        druse_left_start=np.min(druse_edges)
+        druse_left_end=druse_left_start+region_width
+        druse_center_start=np.mean(druse_edges).astype(int)-region_width//2
+        druse_center_end=druse_center_start+region_width
+        druse_right_start=np.max(druse_edges)-region_width
+        druse_right_end=druse_right_start+region_width
+
+
+        colors = 'rgb'
+        im = imread(fn)
+
+        inner_retina = []
+        for x in range(im.shape[1]):
+            inner = im[isos_depth[x]-40:isos_depth[x]-5,x]
+            inner_retina.append(inner)
+
+        inner_retina = np.array(inner_retina).mean(axis=1)
+        im = im/inner_retina
+
+        druse_left = []
+        druse_right = []
+        druse_center = []
+        normal = []
+
+        temp = []
+        for x in range(druse_left_start,druse_left_end+1):
+            druse_left.append(im[isos_depth[x],x])
+        druse_left_mean = np.mean(druse_left)
+        temp = []
+        for x in range(druse_center_start,druse_center_end+1):
+            druse_center.append(im[isos_depth[x],x])
+        druse_center_mean = np.mean(druse_center)
+        temp = []
+        for x in range(druse_right_start,druse_right_end+1):
+            druse_right.append(im[isos_depth[x],x])
+        druse_right_mean = np.mean(druse_right)
+        temp = []
+        for x in range(normal_start,normal_end+1):
+            normal.append(im[isos_depth[x],x])
+        normal_mean = np.mean(normal)
+        
+        plt.imshow(np.log(im),cmap='gray',interpolation='none')
+        druse_x1s = [druse_left_start,druse_center_start,druse_right_start]
+        druse_x2s = [druse_left_end,druse_center_end,druse_right_end]
+        for idx,(x1,x2) in enumerate(zip(druse_x1s,druse_x2s)):
+            plt.axvspan(x1,x2,color=colors[idx],alpha=0.25)
+
+        plt.axvspan(normal_start,normal_end,color='y',alpha=0.25)
+        plt.savefig('%s_regions_marked.png',dpi=300)
+
+        print '%d\t%0.3f\t%0.3f\t%0.3f\t%0.3f'%(pupil_position,normal_mean,druse_left_mean,druse_center_mean,druse_right_mean)
+        
+
 class Segmenter:
 
     def __init__(self,fn):

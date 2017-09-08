@@ -1,4 +1,4 @@
-from doct_tools import Segmenter
+from doct_tools import Segmenter,Summary
 import glob,os,sys
 
 flist = glob.glob('/home/rjonnal/data/Dropbox/Share/hroct_data/2017.07.06_registered_projections/AVG*.tif')
@@ -9,5 +9,6 @@ for f in flist:
     tokens = partial.split('_') # tokenize the filename using underscores
     pupil_position = int(tokens[-2])
 
-    s = Segmenter(f)
+    #s = Segmenter(f)
+    summary = Summary(f)
     
