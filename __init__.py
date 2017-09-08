@@ -83,7 +83,13 @@ class Segmenter:
     def __init__(self,fn):
 
         tag = os.path.splitext(fn)[0]
-        
+        normal_fn = '%s_normal_edges.txt'%tag
+        druse_fn = '%s_druse_edges.txt'%tag
+        isos_fn = '%s_isos_depth.txt'%tag
+        for outfn in [normal_fn,druse_fn,isos_fn]:
+            if os.path.exists(outfn):
+                print '%s exists.'%outfn
+                return
         im = imread(fn)
         prof = im.mean(axis=1)
         zmin = np.argmax(prof)-100
@@ -139,10 +145,10 @@ class Segmenter:
         plt.plot(x,isos_position)
         plt.plot(xclicks,yclicks+zmin,'rx')
         plt.savefig('%s_marked.png'%tag,dpi=300)
-        np.savetxt('%s_isos_depth.txt'%tag,isos_position)
+        np.savetxt(isos_fn,isos_position)
         plt.close()
         
         xclicks,yclicks,junk = collector([subim],titles=['click edges of normal retina'])
-        np.savetxt('%s_normal_edges.txt'%tag,np.round(np.sort(xclicks)))
+        np.savetxt(normal_fn,np.round(np.sort(xclicks)))
         xclicks,yclicks,junk = collector([subim],titles=['click edges of druse'])
-        np.savetxt('%s_druse_edges.txt'%tag,np.round(np.sort(xclicks)))
+        np.savetxt(druse_fn,np.round(np.sort(xclicks)))
